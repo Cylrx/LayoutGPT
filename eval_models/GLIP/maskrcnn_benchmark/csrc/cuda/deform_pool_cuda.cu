@@ -8,8 +8,7 @@
 #include <ATen/ATen.h>
 #include <ATen/cuda/CUDAContext.h>
 
-#include <THC/THC.h>
-#include <THC/THCDeviceUtils.cuh>
+// THC headers removed for newer PyTorch
 
 #include <vector>
 #include <iostream>

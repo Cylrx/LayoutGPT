@@ -2,9 +2,10 @@
 #include <ATen/ATen.h>
 #include <ATen/cuda/CUDAContext.h>
 
-#include <THC/THC.h>
-#include <THC/THCAtomics.cuh>
-#include <THC/THCDeviceUtils.cuh>
+#include <ATen/ceil_div.h>
+#include <ATen/cuda/Atomic.cuh>
+#include <c10/cuda/CUDAException.h>
+#include <algorithm>
 
 
 // TODO make it in a common file
@@ -126,11 +127,12 @@ std::tuple<at::Tensor, at::Tensor> ROIPool_forward_cuda(const at::Tensor& input,
 
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
-  dim3 grid(std::min(THCCeilDiv(output_size, 512L), 4096L));
+  int blocks = std::min<int64_t>(at::ceil_div((int64_t)output_size, (int64_t)512), (int64_t)4096);
+  dim3 grid(blocks);
   dim3 block(512);
 
   if (output.numel() == 0) {
-    THCudaCheck(cudaGetLastError());
+    C10_CUDA_CHECK(cudaGetLastError());
     return std::make_tuple(output, argmax);
   }
 
@@ -148,7 +150,7 @@ std::tuple<at::Tensor, at::Tensor> ROIPool_forward_cuda(const at::Tensor& input,
          output.data_ptr<scalar_t>(),
          argmax.data_ptr<int>());
   });
-  THCudaCheck(cudaGetLastError());
+  C10_CUDA_CHECK(cudaGetLastError());
   return std::make_tuple(output, argmax);
 }
 
@@ -173,12 +175,13 @@ at::Tensor ROIPool_backward_cuda(const at::Tensor& grad,
 
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
-  dim3 grid(std::min(THCCeilDiv(grad.numel(), 512L), 4096L));
+  int blocks = std::min<int64_t>(at::ceil_div((int64_t)grad.numel(), (int64_t)512), (int64_t)4096);
+  dim3 grid(blocks);
   dim3 block(512);
 
   // handle possibly empty gradients
   if (grad.numel() == 0) {
-    THCudaCheck(cudaGetLastError());
+    C10_CUDA_CHECK(cudaGetLastError());
     return grad_input;
   }
 
@@ -197,6 +200,6 @@ at::Tensor ROIPool_backward_cuda(const at::Tensor& grad,
          grad_input.data_ptr<scalar_t>(),
          rois.contiguous().data_ptr<scalar_t>());
   });
-  THCudaCheck(cudaGetLastError());
+  C10_CUDA_CHECK(cudaGetLastError());
   return grad_input;
 }

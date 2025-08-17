@@ -4,8 +4,7 @@
 #include <ATen/ATen.h>
 #include <ATen/cuda/CUDAContext.h>
 
-#include <THC/THC.h>
-#include <THC/THCDeviceUtils.cuh>
+// THC headers removed for PyTorch 1.11+
 
 #include <vector>
 #include <iostream>
@@ -70,7 +69,7 @@ void shape_check(at::Tensor input, at::Tensor offset, at::Tensor *gradOutput,
                  int deformable_group) 
 {
   TORCH_CHECK(weight.ndimension() == 4,
-           "4D weight tensor (nOutputPlane,nInputPlane,kH,kW) expected, "
+           "4D weight tensor (nOutputPlane,nInputPlane,kH,kW) expected, ",
            "but got: %s",
            weight.ndimension());
 
@@ -121,7 +120,7 @@ void shape_check(at::Tensor input, at::Tensor offset, at::Tensor *gradOutput,
 
   if (outputWidth < 1 || outputHeight < 1)
     AT_ERROR(
-        "Given input size: (%ld x %ld x %ld). "
+        "Given input size: (%ld x %ld x %ld). ",
         "Calculated output size: (%ld x %ld x %ld). Output size is too small",
         nInputPlane, inputHeight, inputWidth, nOutputPlane, outputHeight,
         outputWidth);
@@ -134,7 +133,7 @@ void shape_check(at::Tensor input, at::Tensor offset, at::Tensor *gradOutput,
            "input image is smaller than kernel");
 
   TORCH_CHECK((offset.size(2) == outputHeight && offset.size(3) == outputWidth),
-           "invalid spatial size of offset, expected height: %d width: %d, but "
+           "invalid spatial size of offset, expected height: %d width: %d, but ",
            "got height: %d width: %d",
            outputHeight, outputWidth, offset.size(2), offset.size(3));
 
@@ -148,7 +147,7 @@ void shape_check(at::Tensor input, at::Tensor offset, at::Tensor *gradOutput,
 
     TORCH_CHECK((gradOutput->size(dimh) == outputHeight &&
               gradOutput->size(dimw) == outputWidth),
-             "invalid size of gradOutput, expected height: %d width: %d , but "
+             "invalid size of gradOutput, expected height: %d width: %d , but ",
              "got height: %d width: %d",
              outputHeight, outputWidth, gradOutput->size(dimh),
              gradOutput->size(dimw));

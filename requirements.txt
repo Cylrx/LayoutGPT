@@ -1,5 +1,7 @@
 torch==1.13.0
 torchvision
+cuda-python==11.7.1
+nvidia-cuda-nvcc-cu11==11.7.99
 tensorboard
 torch-fidelity 
 sentencepiece
